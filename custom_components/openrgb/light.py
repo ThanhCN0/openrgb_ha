@@ -175,6 +175,7 @@ class OpenRGBLight(LightEntity):
 
         # Restore the state if the light just gets turned on
         if not kwargs:
+        # if not kwargs and not self.is_on:
             self._hs_value = self._prev_hs_value
             self._brightness = self._prev_brightness
 
@@ -211,13 +212,20 @@ class OpenRGBLight(LightEntity):
     def _retrieve_current_name(self) -> str:
         raise NotImplementedError
 
-    def _retrieve_active_color(self) -> tuple[float, float]:
+    def _retrieve_active_color(self) -> tuple[float, float, float]:
         raise NotImplementedError
 
     def update(self):
         """Single function to update the devices state."""
         self._name = self._retrieve_current_name()
-        self._hs_value = self._retrieve_active_color()
+        *self._hs_value, self._brightness = self._retrieve_active_color()
+        self._brightness = 255 * (self._brightness / 100)
+
+        if self._brightness != 0.0:
+            self._prev_brightness = self._brightness
+            self._prev_hs_value = self._hs_value
+        elif self.is_on:
+            self.turn_on()
 
         # For many devices, if OpenRGB hasn't set it, the initial state is
         # unknown as they don't otherwise provide a way of reading it.
@@ -318,10 +326,11 @@ class OpenRGBDevice(OpenRGBLight):
     def _retrieve_current_name(self) -> str:
         return f"{self._light.name} {self._light.device_id}"
 
-    def _retrieve_active_color(self) -> tuple[float, float]:
-        return color_util.color_RGB_to_hs(*orgb_tuple(self._light.colors[0]))
+    def _retrieve_active_color(self) -> tuple[float, float, float]:
+        return color_util.color_RGB_to_hsv(*orgb_tuple(self._light.colors[0]))
 
     def update(self):
+        self._prev_effect = self._effect
         super().update()
 
         self._effect = self._light.modes[self._light.active_mode].name
@@ -398,8 +407,8 @@ class OpenRGBLed(OpenRGBLight):
         return f"{self._light.name} {self._light.device_id} LED {self._led_id}"
         return f"{self._light.name} {self._light.device_id} {self._light.leds[self._led_id].name}"
 
-    def _retrieve_active_color(self) -> tuple[float, float]:
-        return color_util.color_RGB_to_hs(*orgb_tuple(self._light.colors[self._led_id]))
+    def _retrieve_active_color(self) -> tuple[float, float, float]:
+        return color_util.color_RGB_to_hsv(*orgb_tuple(self._light.colors[self._led_id]))
 
     def _set_color(self):
         """Set the devices color using the library."""
