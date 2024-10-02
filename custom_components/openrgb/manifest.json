@@ -1,11 +1,11 @@
 {
     "domain": "openrgb",
     "name": "OpenRGB",
-    "version": "2.3",
+    "version": "2.4",
     "config_flow": true,
-    "documentation": "https://github.com/koying/openrgb_ha",
-    "issue_tracker": "https://github.com/koying/openrgb_ha/issues",
+    "documentation": "https://github.com/ThanhCN0/openrgb_ha",
+    "issue_tracker": "https://github.com/ThanhCN0/openrgb_ha/issues",
     "requirements": ["openrgb-python==0.2.10"],
-    "codeowners": ["@bahorn", "@koying"],
+    "codeowners": ["@bahorn", "@koying","@ThanhCN0"],
     "iot_class": "local_polling"
 }
