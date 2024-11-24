@@ -321,11 +321,19 @@ class OpenRGBDevice(OpenRGBLight):
     def _retrieve_active_color(self) -> tuple[float, float]:
         return color_util.color_RGB_to_hs(*orgb_tuple(self._light.colors[0]))
 
+    def _retrieve_active_brightness(self) -> int:
+        """Retrieve the active brightness from the device."""
+        rgb_color = orgb_tuple(self._light.colors[0])
+        hsv_color = color_util.color_RGB_to_hsv(*rgb_color)
+        brightness = int(hsv_color[2] * 2.55)  # Convert percentage to 0-255 scale
+        return brightness
+
     def update(self):
         super().update()
 
         self._effect = self._light.modes[self._light.active_mode].name
         self._effects = list(map(lambda x: x.name, self._light.modes))
+        self._brightness = self._retrieve_active_brightness()
 
     # Functions to modify the devices state
     def _set_effect(self):
